@@ -22,8 +22,16 @@ const MARKET_CAP_DESC = 'market_cap_desc';
 const VOLUME_DESC = 'volume_desc';
 const PER_PAGE = 10;
 
-// State variable to keep track of current order
-let currentOrder = MARKET_CAP_DESC;
+// State variables
+let currentOrder = MARKET_CAP_DESC; // current sort order
+let chartTimeframe = '7d'; // current chart timeframe: '7d' or '30d'
+let refreshTimer = null; // timer for auto-refresh
+
+// Refresh interval in milliseconds. Adjust this constant to change how often
+// the data is refreshed automatically. The default is 60 seconds (60000 ms).
+const REFRESH_INTERVAL_MS = 60000;
+let coinsData = []; // holds coins along with additional computed data
+const chartInstances = {}; // track Chart.js instances per canvas
 
 /**
  * Initialises event listeners once the DOM is ready. Sets up
@@ -33,6 +41,8 @@ let currentOrder = MARKET_CAP_DESC;
 document.addEventListener('DOMContentLoaded', () => {
   const marketBtn = document.getElementById('marketCapBtn');
   const volumeBtn = document.getElementById('volumeBtn');
+  const chart7Btn = document.getElementById('chart7dBtn');
+  const chart30Btn = document.getElementById('chart30dBtn');
   // Handle switching to market cap view
   marketBtn.addEventListener('click', () => {
     if (currentOrder !== MARKET_CAP_DESC) {
@@ -49,6 +59,24 @@ document.addEventListener('DOMContentLoaded', () => {
       volumeBtn.classList.add('active');
       marketBtn.classList.remove('active');
       fetchData();
+    }
+  });
+  // Chart timeframe: 7 days
+  chart7Btn.addEventListener('click', () => {
+    if (chartTimeframe !== '7d') {
+      chartTimeframe = '7d';
+      chart7Btn.classList.add('active');
+      chart30Btn.classList.remove('active');
+      updateAllCharts();
+    }
+  });
+  // Chart timeframe: 30 days
+  chart30Btn.addEventListener('click', () => {
+    if (chartTimeframe !== '30d') {
+      chartTimeframe = '30d';
+      chart30Btn.classList.add('active');
+      chart7Btn.classList.remove('active');
+      updateAllCharts();
     }
   });
   // Trigger initial fetch
@@ -69,15 +97,35 @@ async function fetchData() {
   loading.style.display = 'block';
   content.classList.add('hidden');
   tbody.innerHTML = '';
+  // Clear existing refresh timer to avoid overlapping fetches
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
   try {
     // Build API URL with query parameters
     const url = `${API_URL}?vs_currency=usd&order=${currentOrder}&per_page=${PER_PAGE}&page=1&sparkline=true&price_change_percentage=24h`;
     const response = await fetch(url);
     const data = await response.json();
-    // Populate table rows
-    data.forEach((coin, index) => {
-      // Create table row
+    // Retrieve 50‑day historical data for each coin and compute metrics
+    coinsData = await Promise.all(
+      data.map(async (coin) => {
+        try {
+          const extra = await fetchMarketChart(coin.id);
+          return Object.assign({}, coin, extra);
+        } catch (err) {
+          console.error('Error fetching historical data for', coin.id, err);
+          return Object.assign({}, coin, { avg50: null, prices30: [] });
+        }
+      })
+    );
+    // Populate table rows with additional data
+    coinsData.forEach((coin, index) => {
       const row = document.createElement('tr');
+      // Determine if current price is above or below the 50‑day moving average
+      const above50 = coin.avg50 != null && coin.current_price >= coin.avg50;
+      const dmaClass = above50 ? 'positive' : 'negative';
+      const dmaText = coin.avg50 == null ? '-' : above50 ? 'Above' : 'Below';
       row.innerHTML = `
         <td>${coin.market_cap_rank ?? index + 1}</td>
         <td class="coin-info">
@@ -90,19 +138,127 @@ async function fetchData() {
         <td class="percent ${coin.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}">
           ${coin.price_change_percentage_24h?.toFixed(2) ?? '0.00'}%
         </td>
+        <td class="dma ${dmaClass}">${dmaText}</td>
         <td><canvas id="chart-${index}" class="sparkline"></canvas></td>
       `;
       tbody.appendChild(row);
-      // Draw sparkline using the 7‑day price array
-      drawSparkline(`chart-${index}`, coin.sparkline_in_7d?.price || [], coin.price_change_percentage_24h);
     });
+    // After adding rows, draw charts according to current timeframe
+    updateAllCharts();
     // Hide loading, show content
     loading.style.display = 'none';
     content.classList.remove('hidden');
+    // Set up auto-refresh to update every REFRESH_INTERVAL_MS milliseconds
+    refreshTimer = setTimeout(fetchData, REFRESH_INTERVAL_MS);
   } catch (error) {
     console.error('Error fetching crypto data:', error);
     loading.textContent = 'Error fetching data. Please try again later.';
   }
+}
+
+/**
+ * Fetches the 50‑day market chart for a given coin ID and computes
+ * the 50‑day moving average and the last 30 closing prices. The
+ * `market_chart` endpoint accepts a `days` parameter to specify
+ * the number of days to retrieve, and the `interval` parameter can
+ * request daily data【283702890470731†L320-L344】. Here we request 50 days
+ * of daily data.
+ *
+ * @param {string} id – CoinGecko coin ID
+ * @returns {Promise<{avg50: number|null, prices30: number[]}>}
+ */
+async function fetchMarketChart(id) {
+  const url = `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=50&interval=daily`;
+  const resp = await fetch(url);
+  const json = await resp.json();
+  if (!json || !json.prices || json.prices.length === 0) {
+    return { avg50: null, prices30: [] };
+  }
+  const prices = json.prices.map((p) => p[1]);
+  // Compute 50‑day moving average
+  const sum = prices.reduce((acc, val) => acc + val, 0);
+  const avg50 = sum / prices.length;
+  // Extract last 30 days for 30‑day chart (or fewer if not available)
+  const prices30 = prices.slice(-30);
+  return { avg50, prices30 };
+}
+
+/**
+ * Update all charts on the page based on the selected timeframe.
+ */
+function updateAllCharts() {
+  coinsData.forEach((coin, index) => {
+    drawChart(`chart-${index}`, coin);
+  });
+}
+
+/**
+ * Draws a chart for a coin using Chart.js. This function replaces
+ * the previous drawSparkline and chooses between 7‑day and 30‑day
+ * data based on the current `chartTimeframe`. Chart instances are
+ * stored to allow destruction before re‑drawing when the timeframe
+ * changes.
+ *
+ * @param {string} canvasId – ID of the canvas element
+ * @param {object} coin – Coin data including sparkline and prices30
+ */
+function drawChart(canvasId, coin) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  // Choose the appropriate data series
+  let dataSeries;
+  let changeColour;
+  if (chartTimeframe === '30d' && coin.prices30 && coin.prices30.length > 0) {
+    dataSeries = coin.prices30.slice();
+    // determine colour based on 30‑day trend (compare last price vs first)
+    const trend = dataSeries[dataSeries.length - 1] - dataSeries[0];
+    changeColour = trend >= 0 ? '#10b981' : '#ef4444';
+  } else {
+    // default to 7‑day sparkline
+    dataSeries = (coin.sparkline_in_7d && coin.sparkline_in_7d.price)
+      ? coin.sparkline_in_7d.price.slice()
+      : [];
+    changeColour = coin.price_change_percentage_24h >= 0 ? '#10b981' : '#ef4444';
+  }
+  // Destroy existing chart if it exists to avoid overlap
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+  }
+  chartInstances[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dataSeries.map((_, i) => i),
+      datasets: [
+        {
+          data: dataSeries,
+          borderColor: changeColour,
+          borderWidth: 1,
+          pointRadius: 0,
+          fill: false,
+          tension: 0.2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+        x: { display: false },
+        y: { display: false },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: (context) => {
+              return formatCurrency(context.raw);
+            },
+          },
+        },
+      },
+    },
+  });
 }
 
 /**

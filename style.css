@@ -51,6 +51,30 @@ header h1 {
   background: #2563eb;
 }
 
+/* Chart timeframe toggle buttons */
+.chart-nav {
+  margin-top: 12px;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.chart-nav button {
+  background: #374151;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.chart-nav button.active,
+.chart-nav button:hover {
+  background: #2563eb;
+}
+
 main {
   padding: 20px;
   max-width: 1200px;
@@ -122,6 +146,19 @@ tr:nth-child(odd) {
 
 .percent.negative {
   color: #ef4444; /* Tailwind red-500 */
+}
+
+/* 50‑day moving average indicator */
+.dma {
+  font-weight: 600;
+}
+
+.dma.positive {
+  color: #10b981;
+}
+
+.dma.negative {
+  color: #ef4444;
 }
 
 /* Sparkline charts */
