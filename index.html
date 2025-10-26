@@ -18,8 +18,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Top 10 Cryptocurrencies</h1>
+  <!-- Global market statistics bar populated by the script -->
+  <div id="statsBar" class="stats-bar"></div>
+  <header class="site-header">
+    <h1>Cryptocurrency Prices by Market Cap</h1>
     <!-- Dark mode toggle button; toggles a class on the body element -->
     <button id="darkModeToggle" class="toggle-btn" aria-label="Toggle dark mode">🌙 Dark Mode</button>
     <!-- Only one option: top 10 cryptocurrencies by market cap -->
@@ -34,17 +36,14 @@
           <thead>
             <tr>
             <th>#</th>
-            <th>Name</th>
-            <th>Price (USD)</th>
-            <th>Market Cap</th>
-            <th>24 h Volume</th>
-            <th>24 h %</th>
-            <!-- Show the percentage difference between price and the 50‑day moving average -->
+            <th>Coin</th>
+            <th>Price</th>
+            <th>24h %</th>
+            <th>7d %</th>
             <th>50 DMA %</th>
-            <th>200 DMA</th>
-            <th>14 d RSI</th>
-            <th>Vol/MCap</th>
-            <th>Chart</th>
+            <th>Volume (24h)</th>
+            <th>Market Cap</th>
+            <th>Last 7 Days</th>
             </tr>
           </thead>
           <tbody id="tableBody">

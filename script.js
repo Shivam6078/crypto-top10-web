@@ -29,7 +29,8 @@ const PER_PAGE = 10;
 // Current sort order: only market cap (simplified site)
 let currentOrder = MARKET_CAP_DESC;
 // Use 30‑day charts by default; no user selection
-let chartTimeframe = '30d';
+// Default chart timeframe changed to 7 days to match CoinGecko's layout
+let chartTimeframe = '7d';
 let refreshTimer = null; // timer for auto-refresh
 
 // Refresh interval in milliseconds. Adjust this constant to change how often
@@ -46,6 +47,9 @@ const chartInstances = {}; // track Chart.js instances per canvas
 document.addEventListener('DOMContentLoaded', () => {
   // Immediately fetch data on page load (single page, no toggles)
   fetchData();
+
+  // Fetch and display global market statistics
+  fetchGlobalStats();
 
   // Dark mode toggle setup
   const darkToggle = document.getElementById('darkModeToggle');
@@ -121,22 +125,20 @@ async function fetchData() {
         dma50Class = diff >= 0 ? 'positive' : 'negative';
         dma50Text = (diff >= 0 ? '+' : '') + diff.toFixed(2) + '%';
       }
-      // Determine 200‑day moving average indicator
-      const above200 = coin.avg200 != null && coin.current_price >= coin.avg200;
-      const dma200Class = above200 ? 'positive' : 'negative';
-      const dma200Text = coin.avg200 == null ? '-' : above200 ? 'Above' : 'Below';
-      // Determine RSI colour: oversold (<30), overbought (>70), neutral
-      let rsiClass = '';
-      if (coin.rsi14 != null) {
-        if (coin.rsi14 < 30) rsiClass = 'positive';
-        else if (coin.rsi14 > 70) rsiClass = 'negative';
+      // Compute 7‑day percentage change using the last 7 entries of prices30.  This
+      // approximates the 7‑day change used on CoinGecko.  If fewer than 7
+      // datapoints exist, a dash is displayed.
+      let sevenDayClass = '';
+      let sevenDayText = '-';
+      if (coin.prices30 && coin.prices30.length >= 7) {
+        const first7 = coin.prices30[coin.prices30.length - 7];
+        const last = coin.prices30[coin.prices30.length - 1];
+        if (first7 !== 0) {
+          const diff7 = ((last - first7) / first7) * 100;
+          sevenDayClass = diff7 >= 0 ? 'positive' : 'negative';
+          sevenDayText = (diff7 >= 0 ? '+' : '') + diff7.toFixed(2) + '%';
+        }
       }
-      const rsiText = coin.rsi14 == null ? '-' : coin.rsi14.toFixed(2);
-      // Compute volume to market cap ratio
-      const ratio = coin.market_cap && coin.market_cap > 0
-        ? (coin.total_volume / coin.market_cap)
-        : null;
-      const ratioText = ratio == null ? '-' : ratio.toFixed(3);
       row.innerHTML = `
         <td>${coin.market_cap_rank ?? index + 1}</td>
         <td class="coin-info">
@@ -144,15 +146,13 @@ async function fetchData() {
           <span>${coin.name} (${coin.symbol.toUpperCase()})</span>
         </td>
         <td>${formatCurrency(coin.current_price)}</td>
-        <td>${formatLargeNumber(coin.market_cap)}</td>
-        <td>${formatLargeNumber(coin.total_volume)}</td>
         <td class="percent ${coin.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}">
           ${coin.price_change_percentage_24h?.toFixed(2) ?? '0.00'}%
         </td>
+        <td class="percent ${sevenDayClass}">${sevenDayText}</td>
         <td class="dma ${dma50Class}">${dma50Text}</td>
-        <td class="dma ${dma200Class}">${dma200Text}</td>
-        <td class="rsi ${rsiClass}">${rsiText}</td>
-        <td class="ratio">${ratioText}</td>
+        <td>${formatLargeNumber(coin.total_volume)}</td>
+        <td>${formatLargeNumber(coin.market_cap)}</td>
         <td><canvas id="chart-${index}" class="sparkline"></canvas></td>
       `;
       tbody.appendChild(row);
@@ -404,4 +404,47 @@ function formatLargeNumber(value) {
     unitIndex++;
   }
   return '$' + scaled.toFixed(scaled < 100 ? 2 : 0) + units[unitIndex];
+}
+
+/**
+ * Fetches global market statistics from the CoinGecko API and populates
+ * the stats bar at the top of the page.  This function retrieves
+ * information such as the number of active cryptocurrencies, total
+ * market capitalization, 24 hour trading volume and Bitcoin dominance.
+ * The stats are displayed in small segments similar to the CoinGecko
+ * header bar.  If the request fails, an error message is shown.
+ */
+async function fetchGlobalStats() {
+  const statsBar = document.getElementById('statsBar');
+  if (!statsBar) return;
+  try {
+    const resp = await fetch('https://api.coingecko.com/api/v3/global');
+    const data = await resp.json();
+    if (!data || !data.data) {
+      throw new Error('Invalid response');
+    }
+    const g = data.data;
+    const coins = g.active_cryptocurrencies;
+    const marketCap = g.total_market_cap?.usd;
+    const volume24 = g.total_volume?.usd;
+    const btcDom = g.market_cap_percentage?.btc;
+    statsBar.innerHTML = '';
+    const items = [];
+    if (coins !== undefined) {
+      items.push(`<span class="stat-item">Coins: <strong>${Number(coins).toLocaleString()}</strong></span>`);
+    }
+    if (marketCap !== undefined) {
+      items.push(`<span class="stat-item">Market Cap: <strong>${formatLargeNumber(marketCap)}</strong></span>`);
+    }
+    if (volume24 !== undefined) {
+      items.push(`<span class="stat-item">24h Vol: <strong>${formatLargeNumber(volume24)}</strong></span>`);
+    }
+    if (btcDom !== undefined) {
+      items.push(`<span class="stat-item">BTC Dom: <strong>${btcDom.toFixed(1)}%</strong></span>`);
+    }
+    statsBar.innerHTML = items.join('');
+  } catch (error) {
+    console.error('Error fetching global stats:', error);
+    statsBar.textContent = 'Unable to load global statistics';
+  }
 }

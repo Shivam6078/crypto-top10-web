@@ -210,6 +210,82 @@ footer a:hover {
 }
 
 /*
+ * Global stats bar styling similar to the dark strip on CoinGecko.  This bar
+ * appears at the top of the page and displays market metrics such as the
+ * total number of coins, total market cap, volume and dominance.  The
+ * stat-item class groups a label with its corresponding value.
+ */
+.stats-bar {
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+.stat-item strong {
+  font-weight: 600;
+}
+
+/* Site header styling similar to CoinGecko's white navigation bar */
+.site-header {
+  background: #ffffff;
+  color: #111827;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+}
+.site-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Table header styling: light grey background and muted text, similar to CoinGecko */
+.table-container th {
+  background: #f9fafb;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Adjust row hover effect to be more subtle */
+tr:hover {
+  background: #f1f5f9;
+}
+
+/* Dark mode overrides for new elements */
+.dark-mode .stats-bar {
+  background: #020e23;
+  color: #cbd5e1;
+}
+.dark-mode .site-header {
+  background: #020e23;
+  color: #e5e7eb;
+  border-bottom: 1px solid #1e293b;
+}
+.dark-mode .table-container th {
+  background: #0f172a;
+  color: #94a3b8;
+}
+.dark-mode tr:hover {
+  background: #1e293b;
+}
+
+/*
  * Dark mode support
  *
  * Applying the `dark-mode` class on the <body> element will switch the
