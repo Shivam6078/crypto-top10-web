@@ -20,6 +20,8 @@
 <body>
   <header>
     <h1>Top 10 Cryptocurrencies</h1>
+    <!-- Dark mode toggle button; toggles a class on the body element -->
+    <button id="darkModeToggle" class="toggle-btn" aria-label="Toggle dark mode">🌙 Dark Mode</button>
     <!-- Only one option: top 10 cryptocurrencies by market cap -->
   </header>
   <main>
@@ -37,7 +39,8 @@
             <th>Market Cap</th>
             <th>24 h Volume</th>
             <th>24 h %</th>
-            <th>50 DMA</th>
+            <!-- Show the percentage difference between price and the 50‑day moving average -->
+            <th>50 DMA %</th>
             <th>200 DMA</th>
             <th>14 d RSI</th>
             <th>Vol/MCap</th>

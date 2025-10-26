@@ -208,3 +208,72 @@ footer a {
 footer a:hover {
   text-decoration: underline;
 }
+
+/*
+ * Dark mode support
+ *
+ * Applying the `dark-mode` class on the <body> element will switch the
+ * colour palette from light to dark.  The toggle button defined in
+ * index.html adds or removes this class at runtime and stores the
+ * preference in localStorage.  Colours are chosen to provide sufficient
+ * contrast for readability while preserving the overall layout.
+ */
+
+/* Button used to toggle dark mode */
+.toggle-btn {
+  background: #334155;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  margin-top: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.25s, box-shadow 0.25s;
+}
+.toggle-btn:hover {
+  background: #2563eb;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.4);
+}
+
+/* Dark mode overrides */
+.dark-mode {
+  background: #0f172a;
+  color: #cbd5e1;
+}
+.dark-mode header {
+  background: #020e23;
+  color: #e5e7eb;
+  box-shadow: none;
+}
+.dark-mode .table-container {
+  background: #1e293b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.dark-mode th {
+  background: #0f172a;
+  color: #e5e7eb;
+}
+.dark-mode tr:nth-child(even) {
+  background: #14213d;
+}
+.dark-mode tr:nth-child(odd) {
+  background: #0f172a;
+}
+.dark-mode tr:hover {
+  background: #1e40af;
+  color: #ffffff;
+}
+.dark-mode footer {
+  background: #14213d;
+  color: #94a3b8;
+}
+.dark-mode .toggle-btn {
+  background: #475569;
+  color: #f1f5f9;
+}
+.dark-mode .toggle-btn:hover {
+  background: #2563eb;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.5);
+}

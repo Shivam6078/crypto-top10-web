@@ -46,6 +46,23 @@ const chartInstances = {}; // track Chart.js instances per canvas
 document.addEventListener('DOMContentLoaded', () => {
   // Immediately fetch data on page load (single page, no toggles)
   fetchData();
+
+  // Dark mode toggle setup
+  const darkToggle = document.getElementById('darkModeToggle');
+  if (darkToggle) {
+    // Apply saved preference
+    if (localStorage.getItem('cryptoDarkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      darkToggle.textContent = '☀️ Light Mode';
+    }
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const enabled = document.body.classList.contains('dark-mode');
+      localStorage.setItem('cryptoDarkMode', enabled);
+      // Swap label between dark and light mode
+      darkToggle.textContent = enabled ? '☀️ Light Mode' : '🌙 Dark Mode';
+    });
+  }
 });
 
 /**
@@ -92,10 +109,18 @@ async function fetchData() {
     // Populate table rows with additional data
     coinsData.forEach((coin, index) => {
       const row = document.createElement('tr');
-      // Determine if current price is above or below the 50‑day moving average
-      const above50 = coin.avg50 != null && coin.current_price >= coin.avg50;
-      const dma50Class = above50 ? 'positive' : 'negative';
-      const dma50Text = coin.avg50 == null ? '-' : above50 ? 'Above' : 'Below';
+      // Compute percent difference from the 50‑day moving average.  A positive
+      // percentage indicates the current price is above the average, while a
+      // negative percentage indicates it is below.  If no average is available,
+      // display a dash.  Format the percentage to two decimals and include a
+      // plus sign when positive.
+      let dma50Class = '';
+      let dma50Text = '-';
+      if (coin.avg50 != null) {
+        const diff = ((coin.current_price - coin.avg50) / coin.avg50) * 100;
+        dma50Class = diff >= 0 ? 'positive' : 'negative';
+        dma50Text = (diff >= 0 ? '+' : '') + diff.toFixed(2) + '%';
+      }
       // Determine 200‑day moving average indicator
       const above200 = coin.avg200 != null && coin.current_price >= coin.avg200;
       const dma200Class = above200 ? 'positive' : 'negative';
