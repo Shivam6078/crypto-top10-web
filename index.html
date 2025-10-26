@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Top 10 Cryptocurrencies</title>
   <!-- Meta description improves searchability and link previews -->
-  <meta name="description" content="Interactive dashboard showing the top‑10 cryptocurrencies by market cap or volume with real‑time data, mini charts, and 50‑day moving average indicator.">
+  <meta name="description" content="Interactive dashboard showing the top‑10 cryptocurrencies by market cap with real‑time data, mini charts, and key technical indicators.">
   <!-- Link to the stylesheet -->
   <link rel="stylesheet" href="style.css">
+  <!-- Import Inter font for a modern look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- Favicon for the site -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <!-- Chart.js: a simple, flexible JavaScript charting library【872127742695703†L61-L75】 -->
@@ -16,24 +20,17 @@
 <body>
   <header>
     <h1>Top 10 Cryptocurrencies</h1>
-    <div class="nav">
-      <button id="marketCapBtn" class="active">By Market Cap</button>
-      <button id="volumeBtn">By Daily Volume</button>
-    </div>
-    <!-- Chart timeframe toggle -->
-    <div class="chart-nav">
-      <button id="chart7dBtn" class="active">7 d Chart</button>
-      <button id="chart30dBtn">30 d Chart</button>
-    </div>
+    <!-- Only one option: top 10 cryptocurrencies by market cap -->
   </header>
   <main>
     <!-- Loading indicator -->
     <div id="loading">Loading…</div>
     <!-- Container for table content -->
     <div id="content" class="hidden">
-      <table id="cryptoTable">
-        <thead>
-          <tr>
+      <div class="table-container">
+        <table id="cryptoTable">
+          <thead>
+            <tr>
             <th>#</th>
             <th>Name</th>
             <th>Price (USD)</th>
@@ -41,12 +38,16 @@
             <th>24 h Volume</th>
             <th>24 h %</th>
             <th>50 DMA</th>
+            <th>200 DMA</th>
+            <th>14 d RSI</th>
+            <th>Vol/MCap</th>
             <th>Chart</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-        </tbody>
-      </table>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
   <footer>
