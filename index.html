@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 10 Cryptocurrencies</title>
+  <!-- Link to the stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js: a simple, flexible JavaScript charting library【872127742695703†L61-L75】 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Top 10 Cryptocurrencies</h1>
+    <div class="nav">
+      <button id="marketCapBtn" class="active">By Market Cap</button>
+      <button id="volumeBtn">By Daily Volume</button>
+    </div>
+  </header>
+  <main>
+    <!-- Loading indicator -->
+    <div id="loading">Loading…</div>
+    <!-- Container for table content -->
+    <div id="content" class="hidden">
+      <table id="cryptoTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Price (USD)</th>
+            <th>Market Cap</th>
+            <th>24 h Volume</th>
+            <th>24 h %</th>
+            <th>7 d Chart</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+  </main>
+  <footer>
+    Data source: <a href="https://www.coingecko.com">CoinGecko API</a>.
+  </footer>
+  <!-- Custom behaviour for fetching and displaying crypto data -->
+  <script src="script.js"></script>
+</body>
+</html>

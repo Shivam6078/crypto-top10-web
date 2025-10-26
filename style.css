@@ -1,0 +1,148 @@
+/*
+ * Stylesheet for the Top 10 Cryptocurrencies dashboard.
+ *
+ * The design takes inspiration from financial screener apps. It uses a
+ * dark header with light content and interactive buttons to switch
+ * between market‑cap and volume rankings. Tables are styled for
+ * readability and include basic responsive behaviour.
+ */
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+  color: #333;
+}
+
+header {
+  background: #111827;
+  color: #ffffff;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0 0 10px;
+  font-size: 1.8rem;
+}
+
+.nav {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.nav button {
+  background: #374151;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.nav button.active,
+.nav button:hover {
+  background: #2563eb;
+}
+
+main {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Loading message */
+#loading {
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 40px 0;
+}
+
+/* Hide elements when necessary */
+.hidden {
+  display: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  table-layout: fixed;
+}
+
+th,
+td {
+  padding: 10px 8px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+th {
+  background: #374151;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+tr:nth-child(even) {
+  background: #f3f4f6;
+}
+
+tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.coin-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coin-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.percent {
+  font-weight: 600;
+}
+
+.percent.positive {
+  color: #10b981; /* Tailwind green-500 */
+}
+
+.percent.negative {
+  color: #ef4444; /* Tailwind red-500 */
+}
+
+/* Sparkline charts */
+.sparkline {
+  width: 120px;
+  height: 50px;
+}
+
+footer {
+  text-align: center;
+  padding: 16px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+footer a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
